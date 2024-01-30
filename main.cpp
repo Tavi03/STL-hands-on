@@ -1,62 +1,73 @@
 #include <iostream>
-#include <fstream>
+#include <vector>
 #include <string>
 #include <algorithm>
-#include <vector>
+#include <fstream>
+#include <queue>
 
 using namespace std;
 
-string specializare;
+struct Problem {
+    string name;
+    string speciality;
+    int durata, prioritate;
+    bool operator<(const Problem& p) const{
+        return this->prioritate < p.prioritate;
+    }
+};
 
 struct Doctor {
-    string nume, specializare;
-    string caz;
+    string id;
+    string speciality;
+    int numar_ore = 8;
 };
 
-struct Pacient {
-    string problema, specializare;
-};
+Problem currentProblem;
 
-bool eLiber(Doctor doctor) {
-    if ((doctor.caz == "") && (doctor.specializare == specializare)) {
-        return true;
-    }
-    else {
-        return false;
-    }
+bool matchesSpeciality(const Doctor& doctor) {
+    return doctor.speciality == currentProblem.speciality;
 }
 
 int main() {
     ifstream inFile("HandsOn-Input.txt");
 
-    vector<Pacient> pacienti;
-    vector<Doctor> doctori;
-    string name, speciality;
+    int n, m;
+    inFile >> n;
 
-    int no_problems, no_doctors;
-
-    inFile >> no_problems;
-    for (int i = 0; i < no_problems; i++) {
-        inFile >> name;
-        inFile >> speciality;
-        pacienti.push_back({ name, speciality });
+    
+    priority_queue<Problem> problems_queue;
+    for (int i = 0; i < n; i++) {
+        Problem p;
+        inFile >> p.name >> p.speciality >> p.durata >> p.prioritate;
+        problems_queue.push(p);
     }
 
-    inFile >> no_doctors;
-    for (int i = 0; i < no_doctors; i++) {
-        inFile >> name;
-        inFile >> speciality;
-        doctori.push_back({ name, speciality });
+    inFile >> m;
+    vector<Doctor> doctors(m);
+    for (Doctor& d : doctors) {
+        inFile >> d.id >> d.speciality;
     }
 
-    for (vector<Pacient>::iterator j = pacienti.begin(); j < pacienti.end(); j++) {
-        specializare = j->specializare;
-        vector<Doctor>::iterator it = find_if(doctori.begin(), doctori.end(), eLiber);
-        if (it != doctori.end()) {
-            it->caz = j->problema;
-            cout << it->nume << " " << it->caz << "\n";
-        }
+    while (!problems_queue.empty()) {
+        Problem p = problems_queue.top();
+        vector<Doctor>::iterator it = find_if(doctors.begin(), doctors.end(), [](p.durata) {
+            return p.durata <= this->numar_ore;
+            });
+        problems_queue.pop();
     }
+
+
+    //for (const Problem& p : problems) {
+      //  currentProblem = p;
+        //auto it = find_if(doctors.begin(), doctors.end(), matchesSpeciality);
+
+        //if (it != doctors.end()) {
+          //  cout << it->id << " " << p.name << endl;
+           // doctors.erase(it);
+        //}
+    //}
+
+    inFile.close();
 
     return 0;
 }
